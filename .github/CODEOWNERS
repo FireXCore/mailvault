@@ -1,0 +1,8 @@
+* @FireXCore
+
+/.github/ @FireXCore
+/docs/ @FireXCore
+/src/firexcore_mailvault/protocols/ @FireXCore
+/src/firexcore_mailvault/providers/ @FireXCore
+/src/firexcore_mailvault/repository.py @FireXCore
+/SECURITY.md @FireXCore

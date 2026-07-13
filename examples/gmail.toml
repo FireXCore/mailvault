@@ -1,0 +1,19 @@
+[account]
+email = "user@gmail.com"
+provider = "gmail"
+auth = "app-password"
+
+[imap]
+host = "imap.gmail.com"
+port = 993
+tls_mode = "implicit"
+
+[archive]
+destination = "E:/MailVault"
+scope = "all"
+include_spam = false
+include_trash = false
+
+[throttle]
+soft_rolling_24h_cap = "1GiB"
+hard_rolling_24h_cap = "1.25GiB"

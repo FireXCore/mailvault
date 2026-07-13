@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+<title id="title">FireXCore MailVault</title><desc id="desc">Provider-neutral, read-only email evidence archiving.</desc>
+<rect width="1200" height="300" fill="#FFFFFF"/>
+<rect x="32" y="32" width="236" height="236" rx="30" fill="#0B172A"/>
+<rect x="76" y="103" width="148" height="104" rx="12" fill="none" stroke="#FFFFFF" stroke-width="10"/>
+<path d="M84 116l66 50 66-50" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M96 88h108" fill="none" stroke="#2B7A78" stroke-width="12" stroke-linecap="round"/>
+<text x="320" y="125" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="54" font-weight="700" fill="#0B172A">FireXCore MailVault</text>
+<text x="322" y="174" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="25" fill="#1E3A5F">Provider-neutral email evidence archiving</text>
+<text x="322" y="216" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" fill="#65758B">Read-only acquisition · immutable EML · MIME provenance · SHA-256 object storage</text>
+<line x1="322" y1="241" x2="1110" y2="241" stroke="#EAF0F6" stroke-width="2"/>
+</svg>

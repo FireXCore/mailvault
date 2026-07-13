@@ -1,0 +1,14 @@
+[account]
+email = "procurement@example.com"
+provider = "generic-imap"
+auth = "password"
+
+[imap]
+host = "mail.example.com"
+port = 993
+tls_mode = "implicit"
+
+[archive]
+destination = "E:/MailVault-example"
+scope = "all"
+mailbox_patterns = []

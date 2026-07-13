@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+<title id="title">MailVault doctor command output</title><desc id="desc">A terminal example showing TLS, authentication, provider profile, IMAP capabilities and mailbox discovery.</desc>
+<rect width="1280" height="520" rx="18" fill="#0B172A"/>
+<circle cx="38" cy="30" r="7" fill="#D66565"/><circle cx="62" cy="30" r="7" fill="#D2A84B"/><circle cx="86" cy="30" r="7" fill="#4AA777"/>
+<g font-family="Consolas,Menlo,monospace" font-size="18" fill="#EAF0F6">
+<text x="34" y="82">$ mailvault doctor --account user@gmail.com --host imap.gmail.com --provider gmail</text>
+<text x="34" y="126" fill="#86D3C9">FireXCore MailVault Doctor</text>
+<text x="34" y="166">TLS                    implicit imap.gmail.com:993</text>
+<text x="34" y="200">Authentication         PASS</text>
+<text x="34" y="234">Provider profile       Gmail IMAP</text>
+<text x="34" y="268">IMAP revision          IMAP4rev1</text>
+<text x="34" y="302">Gmail extensions       yes</text>
+<text x="34" y="336">CONDSTORE               yes</text>
+<text x="34" y="370">QRESYNC                 no</text>
+<text x="34" y="404">Selectable mailboxes    18</text>
+<text x="34" y="438">Default archive roots   [Gmail]/All Mail</text>
+<text x="34" y="482" fill="#86D3C9">No messages were changed or downloaded.</text>
+</g></svg>

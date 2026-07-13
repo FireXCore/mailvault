@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+<title id="title">MailVault synchronization output</title><desc id="desc">A terminal example showing metadata discovery and raw message archival progress.</desc>
+<rect width="1280" height="360" rx="18" fill="#0B172A"/>
+<circle cx="38" cy="30" r="7" fill="#D66565"/><circle cx="62" cy="30" r="7" fill="#D2A84B"/><circle cx="86" cy="30" r="7" fill="#4AA777"/>
+<g font-family="Consolas,Menlo,monospace" font-size="18" fill="#EAF0F6">
+<text x="34" y="82">$ mailvault sync --config config.toml</text>
+<text x="34" y="132">Mailboxes 1 | Metadata 12,400 | Raw 8,912</text>
+<text x="34" y="176">Status            complete</text>
+<text x="34" y="210">Messages archived 8,912</text>
+<text x="34" y="244">Bytes downloaded  3.1 GiB</text>
+<text x="34" y="278">Errors            0</text>
+<text x="34" y="322" fill="#86D3C9">Run mailvault verify before transferring the archive.</text>
+</g></svg>

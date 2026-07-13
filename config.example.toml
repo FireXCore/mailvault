@@ -1,0 +1,36 @@
+[account]
+email = "user@gmail.com"
+provider = "auto"            # auto | gmail | generic-imap
+auth = "app-password"        # app-password | password
+
+[imap]
+host = "imap.gmail.com"
+port = 993
+tls_mode = "implicit"        # implicit | starttls
+metadata_batch_size = 200
+overlap_uids = 200
+socket_timeout_seconds = 90
+client_contact = "https://github.com/FireXCore/mailvault/issues"
+
+[archive]
+destination = "E:/MailVault"
+scope = "all"                # all | has-attachments | query
+query = ""
+include_spam = false
+include_trash = false
+mailbox_patterns = []         # Generic IMAP only, e.g. ["INBOX", "Sent*"]
+
+[throttle]
+raw_delay_min_ms = 250
+raw_delay_max_ms = 750
+pause_every_messages = 100
+pause_min_seconds = 5
+pause_max_seconds = 12
+soft_rolling_24h_cap = "1GiB"
+hard_rolling_24h_cap = "1.25GiB"
+max_retries = 5
+max_consecutive_errors = 5
+
+[output]
+write_per_message_json = true
+write_jsonl_exports = true

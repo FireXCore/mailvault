@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+<title id="title">FireXCore MailVault mark</title><desc id="desc">An archive box containing an envelope, representing immutable email evidence storage.</desc>
+<rect width="256" height="256" rx="36" fill="#0B172A"/>
+<rect x="46" y="72" width="164" height="118" rx="14" fill="none" stroke="#FFFFFF" stroke-width="12"/>
+<path d="M55 87l73 55 73-55" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M72 57h112" fill="none" stroke="#2B7A78" stroke-width="14" stroke-linecap="round"/>
+<path d="M84 204h88" fill="none" stroke="#2B7A78" stroke-width="12" stroke-linecap="round"/>
+</svg>

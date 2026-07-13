@@ -1,0 +1,57 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Packaging output
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Runtime data and archives
+/archive/
+MailVault/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.eml
+*.mbox
+*.pst
+*.ost
+*.maildir
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+config.toml
+credentials*.json
+secrets*.json
+*.pem
+*.key
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+~$*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
