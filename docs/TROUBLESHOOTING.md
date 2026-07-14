@@ -71,3 +71,18 @@ Do not delete it. Run the same version and command against the same destination.
 ## Integrity verification fails
 
 Do not continue with downstream ingestion. Check missing paths, storage corruption, interrupted external copy operations, antivirus quarantine and filesystem errors. Restore canonical objects from backup, then rerun full verification.
+
+## Gmail archive created with version 2.0.4 or earlier is incomplete
+
+Versions through 2.0.4 used `X-GM-RAW "all"` for `scope=all`. Gmail interprets X-GM-RAW arguments using Gmail web-search syntax, so the bare word `all` is a text query rather than a universal match. An affected run can therefore report `complete` after archiving only messages matching that search term.
+
+Upgrade to 2.0.5 or newer and rerun the same full-scope command against the existing destination. Versioned scan keys force a safe metadata rescan without discarding already archived objects. Then run:
+
+```powershell
+mailvault audit-labels `
+  --account user@gmail.com `
+  --host imap.gmail.com `
+  --destination E:\MailVault
+```
+
+Do not finalize exports or backups until label coverage passes and `mailvault verify --sample 1` succeeds.

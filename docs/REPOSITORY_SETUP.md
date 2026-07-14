@@ -50,7 +50,7 @@ Enable:
 
 ## Releases
 
-Create Git tags in the form `v2.0.4`. The release workflow builds wheel and source distribution, validates metadata, writes SHA-256 checksums and attaches artifacts to the GitHub release.
+Create Git tags in the form `v2.0.5`. The release workflow builds wheel and source distribution, validates metadata, writes SHA-256 checksums and attaches artifacts to the GitHub release.
 
 PyPI publishing uses a separate trusted-publishing workflow. Configure the GitHub `pypi` environment and PyPI trusted publisher, then set the repository variable `PYPI_PUBLISH_ENABLED=true`. Manual dispatch remains available for controlled validation.
 

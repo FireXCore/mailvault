@@ -1103,6 +1103,20 @@ class ArchiveRepository:
             ],
         }
 
+    def gmail_raw_message_ids(self, account_id: int) -> set[str]:
+        rows = self.connection.execute(
+            """
+            SELECT DISTINCT identity.value
+            FROM message_identities AS identity
+            JOIN messages AS message ON message.id = identity.message_id
+            WHERE identity.account_id = ?
+              AND identity.namespace = 'gmail-x-gm-msgid'
+              AND message.raw_path IS NOT NULL
+            """,
+            (account_id,),
+        ).fetchall()
+        return {str(row["value"]) for row in rows}
+
     def stats(self, account_id: int | None = None) -> dict[str, int]:
         result: dict[str, int] = {}
         if account_id is None:

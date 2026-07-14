@@ -56,6 +56,9 @@ class FakeGateway:
     def fetch_raw(self, uid: int) -> bytes:
         return self.raw
 
+    def fetch_gmail_message_ids(self, uids: list[int]) -> dict[int, str]:
+        return {uid: str(uid) for uid in uids}
+
     def reconnect(self) -> None:
         return None
 

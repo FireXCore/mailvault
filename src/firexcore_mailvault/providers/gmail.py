@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 from collections.abc import Sequence
 
 from firexcore_mailvault.errors import ImapCapabilityError
@@ -29,6 +30,14 @@ class GmailImapProfile(ProviderProfile):
         include_trash: bool,
         patterns: Sequence[str],
     ) -> list[MailboxInfo]:
+        if patterns:
+            return [
+                mailbox
+                for mailbox in mailboxes
+                if mailbox.selectable
+                and any(fnmatch.fnmatchcase(mailbox.name, pattern) for pattern in patterns)
+            ]
+
         all_mail = next((item for item in mailboxes if item.has_flag("\\All")), None)
         if all_mail is None:
             raise ImapCapabilityError(
@@ -56,7 +65,10 @@ class GmailImapProfile(ProviderProfile):
 
     def search_criteria(self, scope: ArchiveScope, query: str | None) -> object:
         if scope is ArchiveScope.ALL:
-            return ("gmail", "all")
+            # Use the standard IMAP ALL search criterion. X-GM-RAW delegates to
+            # Gmail web-search syntax, where the bare word "all" is a text query
+            # rather than a universal match.
+            return ("imap", "ALL")
         if scope is ArchiveScope.HAS_ATTACHMENTS:
             return ("gmail", "has:attachment")
         if not query:

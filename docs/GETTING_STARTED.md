@@ -82,6 +82,19 @@ mailvault sync `
 
 The first phase discovers metadata. The second phase fetches pending raw messages. Stopping the process does not invalidate the archive; use the same destination and command to resume.
 
+## Audit Gmail label coverage
+
+For Gmail, full-scope sync performs remote label reconciliation before reporting `complete`. You can also rerun the audit explicitly before final verification:
+
+```powershell
+mailvault audit-labels `
+  --account user@gmail.com `
+  --host imap.gmail.com `
+  --destination E:\MailVault
+```
+
+A passing audit proves that every Gmail message visible through those labels has a corresponding archived raw EML identity.
+
 ## Verify the archive
 
 ```powershell
@@ -100,6 +113,7 @@ mailvault views --destination E:\MailVault
 1. Run `doctor`.
 2. Run a narrow date or query scope against a new destination when validating a new provider.
 3. Inspect `reports`, `logs`, `metadata/messages`, and `manifests`.
-4. Run `verify`.
-5. Start the full `scope=all` archive.
-6. Preserve the destination and resume rather than restarting from an empty directory.
+4. Start the full `scope=all` archive.
+5. For Gmail, run `audit-labels` and require a passing result.
+6. Run `verify`.
+7. Preserve the destination and resume rather than restarting from an empty directory.

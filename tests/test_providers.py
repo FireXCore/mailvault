@@ -27,6 +27,7 @@ def test_auto_detects_gmail_and_uses_all_mail() -> None:
         patterns=(),
     )
     assert [mailbox.name for mailbox in chosen] == ["[Gmail]/All Mail"]
+    assert profile.search_criteria(ArchiveScope.ALL, None) == ("imap", "ALL")
     assert profile.search_criteria(ArchiveScope.HAS_ATTACHMENTS, None) == (
         "gmail",
         "has:attachment",
@@ -46,3 +47,19 @@ def test_gmail_stable_identity() -> None:
     profile = GmailImapProfile()
     assert profile.stable_message_identity(record) == ("gmail-x-gm-msgid", "123")
     assert profile.stable_thread_identity(record) == ("gmail-x-gm-thrid", "456")
+
+
+def test_gmail_can_select_explicit_label_patterns() -> None:
+    profile = GmailImapProfile()
+    chosen = profile.choose_mailboxes(
+        [
+            MailboxInfo("[Gmail]/All Mail", "/", ("\\All",)),
+            MailboxInfo("NIPHON", "/", ("\\HasNoChildren",)),
+            MailboxInfo("Mr.Ayobi", "/", ("\\HasNoChildren",)),
+        ],
+        include_spam=False,
+        include_trash=False,
+        patterns=("NIP*",),
+    )
+
+    assert [mailbox.name for mailbox in chosen] == ["NIPHON"]

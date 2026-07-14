@@ -10,9 +10,10 @@ from firexcore_mailvault.archive import BlobStore, ContentAddressedStore
 from firexcore_mailvault.atomic import atomic_write_json
 from firexcore_mailvault.config import MailVaultConfig
 from firexcore_mailvault.errors import AuthenticationError, BandwidthLimitReached
+from firexcore_mailvault.gmail_audit import audit_gmail_labels, write_gmail_label_audit
 from firexcore_mailvault.metadata import parse_header_bytes
 from firexcore_mailvault.mime_parser import parse_message
-from firexcore_mailvault.models import ArchivePaths, SyncSummary
+from firexcore_mailvault.models import ArchivePaths, ArchiveScope, ProviderKind, SyncSummary
 from firexcore_mailvault.protocols.imap import ImapGatewayProtocol, effective_batch_size
 from firexcore_mailvault.providers.base import ProviderProfile
 from firexcore_mailvault.repository import ArchiveRepository
@@ -20,6 +21,7 @@ from firexcore_mailvault.retry import RetryPolicy
 from firexcore_mailvault.throttling import BandwidthThrottle, ThrottleSettings
 
 LOGGER = logging.getLogger(__name__)
+_SEARCH_PLAN_VERSION = 2
 ProgressCallback = Callable[[str, dict[str, object]], None]
 T = TypeVar("T")
 
@@ -64,7 +66,7 @@ class SyncEngine:
         try:
             self._discover_metadata(context, summary)
             self._archive_pending(context, summary)
-            summary.status = "complete"
+            self._finalize_coverage(context, summary)
         except BandwidthLimitReached as exc:
             summary.status = "paused"
             summary.stop_reason = str(exc)
@@ -88,6 +90,38 @@ class SyncEngine:
                 stop_reason=summary.stop_reason,
             )
         return summary
+
+    def _finalize_coverage(self, context: SyncContext, summary: SyncSummary) -> None:
+        if self.profile.kind is not ProviderKind.GMAIL or self.config.scope is not ArchiveScope.ALL:
+            summary.status = "complete"
+            return
+
+        report = audit_gmail_labels(
+            self.gateway,
+            self.repository,
+            account_id=context.account_id,
+            account=self.config.account,
+        )
+        report_path = write_gmail_label_audit(report, self.paths.reports)
+        self.progress(
+            "label_audit_complete",
+            {
+                "passed": report.passed,
+                "missing_raw_messages": report.missing_raw_messages,
+                "report": str(report_path),
+            },
+        )
+
+        if report.passed:
+            summary.status = "complete"
+            return
+
+        summary.status = "incomplete"
+        summary.stop_reason = (
+            "Gmail label coverage failed: "
+            f"{report.missing_raw_messages} unique remote messages lack raw EML. "
+            f"See {report_path}."
+        )
 
     def _discover_metadata(self, context: SyncContext, summary: SyncSummary) -> None:
         available = self.gateway.list_mailboxes()
@@ -200,7 +234,9 @@ class SyncEngine:
 
     def _selection_key(self) -> str:
         query = self.config.query or ""
-        return f"{self.profile.kind.value}:{self.config.scope.value}:{query}"
+        return (
+            f"v{_SEARCH_PLAN_VERSION}:{self.profile.kind.value}:{self.config.scope.value}:{query}"
+        )
 
     def _archive_pending(self, context: SyncContext, summary: SyncSummary) -> None:
         throttle = BandwidthThrottle(
