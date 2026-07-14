@@ -68,6 +68,8 @@ class ImapGatewayProtocol(Protocol):
 
     def fetch_raw(self, uid: int) -> bytes: ...
 
+    def fetch_gmail_message_ids(self, uids: Sequence[int]) -> dict[int, str]: ...
+
     def reconnect(self) -> None: ...
 
 
@@ -198,8 +200,12 @@ class ImapGateway:
 
     def search_uids(self, description: object) -> list[int]:
         client = self._require_client()
-        if isinstance(description, tuple) and len(description) == 2 and description[0] == "gmail":
-            return [int(value) for value in client.gmail_search(str(description[1]))]
+        if isinstance(description, tuple) and len(description) == 2:
+            strategy, value = description
+            if strategy == "gmail":
+                return [int(item) for item in client.gmail_search(str(value))]
+            if strategy == "imap":
+                return [int(item) for item in client.search([str(value)])]
         criteria = cast(Sequence[str | bytes], description)
         return [int(value) for value in client.search(criteria)]
 
@@ -249,6 +255,18 @@ class ImapGateway:
         if raw is None:
             raise RuntimeError(f"Server returned no raw message bytes for UID {uid}.")
         return raw
+
+    def fetch_gmail_message_ids(self, uids: Sequence[int]) -> dict[int, str]:
+        if not uids:
+            return {}
+        client = self._require_client()
+        response = client.fetch(list(uids), ["X-GM-MSGID"])
+        result: dict[int, str] = {}
+        for uid, data in response.items():
+            value = _find_text(data, b"X-GM-MSGID")
+            if value is not None:
+                result[int(uid)] = value
+        return result
 
     def noop(self) -> None:
         self._require_client().noop()

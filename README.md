@@ -149,6 +149,17 @@ mailvault sync `
 
 The App Password is requested through hidden terminal input. It is not written to configuration, SQLite, JSON, manifests, reports, or logs.
 
+After a full Gmail sync, verify remote label coverage before treating the archive as final:
+
+```powershell
+mailvault audit-labels `
+  --account user@gmail.com `
+  --host imap.gmail.com `
+  --destination E:\MailVault
+```
+
+Full-scope Gmail sync performs this reconciliation automatically before it can report `complete`. The standalone command can be rerun at any time and writes a JSON report under `reports/`.
+
 <p align="center">
   <img src="docs/assets/doctor-output.svg" alt="MailVault doctor output" width="100%">
 </p>
@@ -200,6 +211,7 @@ See [Configuration](docs/CONFIGURATION.md).
 |---|---|
 | `mailvault doctor` | Validate TLS, authentication, server capabilities, provider profile, and mailbox discovery. |
 | `mailvault sync` | Discover metadata and archive complete raw messages with resumable state. |
+| `mailvault audit-labels` | Compare every IMAP-visible Gmail label with locally archived raw EML identities. |
 | `mailvault stats` | Display message, occurrence, MIME-part, blob, and storage counts. |
 | `mailvault verify` | Recalculate raw-message and blob hashes. |
 | `mailvault export` | Regenerate portable JSONL and procurement source manifests. |

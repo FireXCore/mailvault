@@ -4,6 +4,20 @@ All notable changes to FireXCore MailVault are documented in this file.
 
 The project follows Semantic Versioning.
 
+## 2.0.5 - 2026-07-14
+
+### Fixed
+
+- Corrected Gmail full-scope discovery to use the standard IMAP `SEARCH ALL` criterion.
+- Removed the invalid `X-GM-RAW "all"` behavior, which interpreted `all` as a Gmail text search and could silently omit older messages.
+- Versioned scan selection keys so existing archives perform a safe full metadata rescan after upgrading instead of reusing the affected checkpoint.
+
+### Added
+
+- Added Gmail message-ID fetch support for remote label reconciliation.
+- Added the `mailvault audit-labels` command to compare every IMAP-visible Gmail label with locally archived raw EML identities.
+- Full-scope Gmail sync now runs the same remote label audit before reporting `complete`; missing remote messages produce `incomplete` and exit code 2.
+
 ## 2.0.4 - 2026-07-13
 
 ### Fixed

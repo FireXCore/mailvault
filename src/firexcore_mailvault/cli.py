@@ -15,6 +15,7 @@ from firexcore_mailvault import __version__
 from firexcore_mailvault.config import MailVaultConfig, config_from_toml, parse_bytes
 from firexcore_mailvault.errors import MailVaultError
 from firexcore_mailvault.exporter import export_jsonl
+from firexcore_mailvault.gmail_audit import audit_gmail_labels, write_gmail_label_audit
 from firexcore_mailvault.lock import RunLock
 from firexcore_mailvault.logging_setup import configure_logging
 from firexcore_mailvault.models import ArchiveScope, AuthKind, ProviderKind, SyncSummary, TlsMode
@@ -197,6 +198,8 @@ def sync(
                         paths.manifests / "procurement_sources.jsonl"
                     )
             _print_sync_summary(summary)
+            if summary.status == "incomplete":
+                raise typer.Exit(2)
         except KeyboardInterrupt as exc:
             console.print(
                 "[yellow]Sync interrupted safely. Run the same command to resume.[/yellow]"
@@ -205,6 +208,80 @@ def sync(
         except (MailVaultError, OSError, ValueError, RuntimeError) as exc:
             console.print(f"[red]Sync failed:[/red] {sanitize_text(str(exc))}")
             raise typer.Exit(1) from exc
+
+
+@app.command("audit-labels")
+def audit_labels_command(
+    account: Annotated[str, typer.Option("--account", "-a", prompt=True)],
+    destination: Annotated[Path, typer.Option("--destination", "-d")],
+    host: Annotated[str, typer.Option("--host")] = "imap.gmail.com",
+    port: Annotated[int, typer.Option("--port")] = 993,
+    auth: Annotated[AuthKind, typer.Option("--auth")] = AuthKind.APP_PASSWORD,
+    tls_mode: Annotated[TlsMode, typer.Option("--tls-mode")] = TlsMode.IMPLICIT,
+    timeout: Annotated[int, typer.Option("--timeout")] = 90,
+) -> None:
+    """Compare every IMAP-visible Gmail label with locally archived raw EML identities."""
+    paths = build_archive_paths(destination)
+    configure_logging(paths.logs / "mailvault.jsonl", "INFO")
+    secret = _secret(auth)
+
+    try:
+        with (
+            ArchiveRepository(paths.database) as repository,
+            ImapGateway(
+                account,
+                secret,
+                host=host,
+                port=port,
+                tls_mode=tls_mode,
+                timeout_seconds=timeout,
+                client_contact="https://github.com/FireXCore/mailvault/issues",
+            ) as gateway,
+        ):
+            profile = resolve_provider(ProviderKind.GMAIL, gateway.capabilities)
+            profile.validate_capabilities(gateway.capabilities)
+            account_id = repository.find_account_id(account)
+            if account_id is None:
+                raise typer.BadParameter("Account does not exist in this archive.")
+
+            report = audit_gmail_labels(
+                gateway,
+                repository,
+                account_id=account_id,
+                account=account,
+            )
+            report_path = write_gmail_label_audit(report, paths.reports)
+
+        table = Table(title="Gmail Label Coverage Audit")
+        table.add_column("Mailbox")
+        table.add_column("Remote", justify="right")
+        table.add_column("Raw", justify="right")
+        table.add_column("Missing", justify="right")
+        table.add_column("Result")
+        for item in report.labels:
+            table.add_row(
+                item.mailbox,
+                f"{item.remote_messages:,}",
+                f"{item.archived_raw_messages:,}",
+                f"{item.missing_raw_messages:,}",
+                "PASS" if item.passed else "FAIL",
+            )
+        console.print(table)
+        console.print(f"Report: {report_path}")
+
+        if not report.passed:
+            console.print(
+                f"[red]Coverage failed:[/red] {report.missing_raw_messages:,} "
+                "unique Gmail messages do not have archived raw EML."
+            )
+            raise typer.Exit(2)
+
+        console.print("[green]Coverage PASS:[/green] every IMAP-visible label is archived.")
+    except typer.Exit:
+        raise
+    except Exception as exc:
+        console.print(f"[red]Label audit failed:[/red] {sanitize_text(str(exc))}")
+        raise typer.Exit(1) from exc
 
 
 @app.command("stats")

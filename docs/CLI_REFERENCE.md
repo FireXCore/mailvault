@@ -39,7 +39,7 @@ Important options:
 --query             Provider query used with scope=query
 --include-spam      Include Spam/Junk archive roots
 --include-trash     Include Trash archive roots
---mailbox           Repeatable generic-IMAP mailbox pattern
+--mailbox           Repeatable mailbox pattern; Gmail labels are supported
 --soft-cap          Rolling 24-hour soft download cap
 --hard-cap          Rolling 24-hour hard download cap
 --log-level         DEBUG | INFO | WARNING | ERROR
@@ -58,6 +58,23 @@ Incorrect:
 ```text
 --auth <actual-secret>
 ```
+
+
+## `mailvault audit-labels`
+
+Performs a read-only Gmail reconciliation. It enumerates every IMAP-visible mailbox or label, retrieves `X-GM-MSGID` values, and compares them with locally archived raw EML identities.
+
+```text
+--account, -a       Gmail account present in the archive
+--destination, -d   Archive root
+--host              Gmail IMAP hostname; default imap.gmail.com
+--port              IMAP port; default 993
+--auth              app-password | password
+--tls-mode          implicit | starttls
+--timeout           Socket timeout in seconds
+```
+
+The command writes a timestamped JSON report under `reports/` and exits with code `2` when any remote Gmail message lacks raw EML. Full-scope Gmail sync performs the same audit automatically before reporting `complete`. The audit never downloads raw message bodies and does not mutate the mailbox.
 
 ## `mailvault stats`
 
