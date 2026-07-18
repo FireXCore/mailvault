@@ -8,7 +8,15 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+    TimeRemainingColumn,
+)
 from rich.table import Table
 
 from firexcore_mailvault import __version__
@@ -347,16 +355,129 @@ def export_command(
 @app.command("views")
 def views_command(
     destination: Annotated[Path, typer.Option("--destination", "-d")],
+    restart: Annotated[
+        bool,
+        typer.Option(
+            "--restart",
+            help="Discard an incomplete view build and rebuild from the beginning.",
+        ),
+    ] = False,
 ) -> None:
-    """Rebuild disposable domain, sender, thread, mailbox, year, and label views."""
+    """Build resumable domain, sender, thread, mailbox, year, and label views."""
     paths = build_archive_paths(destination)
-    with ArchiveRepository(paths.database) as repository:
-        counts = ViewExporter(repository, paths.root, paths.views).rebuild()
-    table = Table(title="Views Rebuilt")
-    table.add_column("View")
-    table.add_column("Pointers", justify="right")
-    for key, value in sorted(counts.items()):
-        table.add_row(key, str(value))
+    last_state: dict[str, int] = {
+        "processed_rows": 0,
+        "total_rows": 0,
+        "pointers_written": 0,
+        "total_pointers": 0,
+    }
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("{task.description}"),
+        BarColumn(bar_width=None),
+        MofNCompleteColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn(),
+        console=console,
+        transient=False,
+    ) as progress:
+        task_id = progress.add_task("Planning view snapshot…", total=None)
+
+        def on_progress(event: str, payload: dict[str, object]) -> None:
+            for key in last_state:
+                value = payload.get(key)
+                if isinstance(value, int):
+                    last_state[key] = value
+
+            if event == "planning":
+                rows = payload.get("rows_scanned", 0)
+                progress.update(task_id, description=f"Planning view snapshot · {rows:,} rows")
+                return
+
+            if event == "planned":
+                total_rows = last_state["total_rows"]
+                progress.update(
+                    task_id,
+                    total=total_rows,
+                    completed=0,
+                    description="View plan ready",
+                )
+                return
+
+            if event == "build_started":
+                verb = "Resuming" if payload.get("resumed") else "Building"
+                progress.update(
+                    task_id,
+                    total=last_state["total_rows"],
+                    completed=last_state["processed_rows"],
+                    description=(
+                        f"{verb} views · {last_state['pointers_written']:,}/"
+                        f"{last_state['total_pointers']:,} pointers"
+                    ),
+                )
+                return
+
+            if event in {"advanced", "interrupted"}:
+                progress.update(
+                    task_id,
+                    total=last_state["total_rows"],
+                    completed=last_state["processed_rows"],
+                    description=(
+                        f"Building views · {last_state['pointers_written']:,}/"
+                        f"{last_state['total_pointers']:,} pointers"
+                    ),
+                )
+                return
+
+            if event == "publishing":
+                progress.update(
+                    task_id,
+                    total=last_state["total_rows"],
+                    completed=last_state["total_rows"],
+                    description="Publishing completed view snapshot…",
+                )
+                return
+
+            if event == "completed":
+                progress.update(
+                    task_id,
+                    total=last_state["total_rows"],
+                    completed=last_state["total_rows"],
+                    description=(
+                        "Views already current" if payload.get("up_to_date") else "Views completed"
+                    ),
+                )
+
+        try:
+            with (
+                RunLock(paths.state / "sync.lock"),
+                ArchiveRepository(paths.database) as repository,
+            ):
+                result = ViewExporter(repository, paths.root, paths.views).rebuild(
+                    restart=restart,
+                    progress=on_progress,
+                )
+        except KeyboardInterrupt as exc:
+            console.print(
+                "[yellow]View build interrupted safely at "
+                f"{last_state['processed_rows']:,}/{last_state['total_rows']:,} rows. "
+                "Run the same command to resume, or add --restart to start over.[/yellow]"
+            )
+            raise typer.Exit(130) from exc
+        except (MailVaultError, OSError, ValueError, RuntimeError) as exc:
+            console.print(f"[red]View build failed:[/red] {sanitize_text(str(exc))}")
+            raise typer.Exit(1) from exc
+
+    status = "UP TO DATE" if result.up_to_date else ("RESUMED" if result.resumed else "REBUILT")
+    table = Table(title="Views Build Result")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("Status", status)
+    table.add_row("Source rows", f"{result.rows_processed:,}")
+    table.add_row("Pointer writes", f"{result.pointers_written:,}")
+    for key, value in sorted(result.counts.items()):
+        table.add_row(key, f"{value:,}")
     console.print(table)
 
 
