@@ -39,7 +39,16 @@ Raw messages use PEEK semantics to avoid marking messages as read.
 
 ## Filesystem safety
 
-Canonical paths are digest-based. Untrusted filenames are metadata, not storage paths. Disposable view segments are sanitized and bounded.
+Canonical paths are digest-based. Untrusted filenames are metadata, not canonical storage paths.
+
+Disposable view paths apply defense in depth:
+
+- directory segments are sanitized and limited to 64 characters;
+- oversized values receive deterministic SHA-256 suffixes;
+- pointer filenames use canonical archive and MIME-part identity plus a bounded digest;
+- original filenames remain inside JSON evidence;
+- atomic temporary files use a short constant prefix;
+- completed view trees are published only after the staging snapshot is complete.
 
 Object writes are atomic. Existing digest paths are checked for conflicting size before reuse.
 

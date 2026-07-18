@@ -57,6 +57,22 @@ Provider tests should cover:
 - provider query translation;
 - fallback behavior when extensions are absent.
 
+
+## View exporter validation
+
+Run the targeted Windows-path, interruption, resume, progress and snapshot tests:
+
+```powershell
+python -m pytest `
+  tests\test_view_exporter.py `
+  tests\test_unicode_safety.py `
+  -q
+```
+
+The view exporter tests cover bounded deterministic filenames, short atomic temporary names, durable source-row checkpoints, resume, source-fingerprint invalidation, transactional publication, up-to-date no-op behavior, and exact pointer totals.
+
+See [Resumable navigation views](RESUMABLE_VIEWS.md).
+
 ## Release validation
 
 Before tagging:

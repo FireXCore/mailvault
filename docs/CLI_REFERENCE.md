@@ -98,7 +98,46 @@ Regenerates portable JSONL manifests and `procurement_sources.jsonl` from SQLite
 
 ## `mailvault views`
 
-Regenerates disposable pointer views by domain, sender, thread, mailbox, year, and label.
+Builds disposable JSON pointer views by domain, sender, thread, mailbox, year, and label.
+
+```powershell
+mailvault views `
+  --destination "E:\MailVault-E"
+```
+
+Options:
+
+```text
+--destination, -d    Archive root
+--restart            Discard an incomplete staging build and start from row zero
+```
+
+The command performs four phases:
+
+1. **Planning** scans the protected SQLite snapshot to calculate exact source-row and pointer totals and a deterministic fingerprint.
+2. **Building** or **Resuming** writes pointers into `state/views-rebuild-staging-v3/`.
+3. **Publishing** atomically replaces the completed `views/` snapshot.
+4. **Completed** reports one of `REBUILT`, `RESUMED`, or `UP TO DATE`.
+
+The progress display includes exact source rows, pointer writes, percentage, and ETA.
+
+A safe interruption checkpoints fully completed source rows in:
+
+```text
+state/views-rebuild-v1.json
+```
+
+Rerun the same command to resume. Do not use `--restart` when the goal is to continue the existing staging build.
+
+The previous completed `views/` tree remains available until the replacement is fully built and published. If SQLite changes after interruption, the stale checkpoint is rejected automatically. If the completed marker and source fingerprint already match, the command returns `UP TO DATE` without rewriting pointer files.
+
+Completed snapshots contain:
+
+```text
+views/_mailvault_views.json
+```
+
+See [Resumable navigation views](RESUMABLE_VIEWS.md).
 
 ## Module execution
 

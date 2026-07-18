@@ -68,8 +68,27 @@ Rebuild manifests:
 mailvault export --destination /archive/path
 ```
 
-Rebuild navigation views:
+Build or resume navigation views:
 
 ```bash
 mailvault views --destination /archive/path
 ```
+
+The progress display reports exact source rows, pointer writes, percentage and ETA. A safe interruption preserves the durable cursor and staging tree; rerun the same command to continue. To intentionally discard an incomplete build:
+
+```bash
+mailvault views --destination /archive/path --restart
+```
+
+The previous completed `views/` snapshot is retained until the replacement has been fully written and transactionally published.
+
+Operational state:
+
+```text
+state/views-rebuild-v1.json          durable checkpoint
+state/views-rebuild-staging-v3/      incomplete replacement tree
+state/views-previous/                 temporary publication rollback tree
+views/_mailvault_views.json          completed snapshot marker
+```
+
+Do not remove the checkpoint or staging tree when the goal is to resume. A source change invalidates stale state automatically. See [Resumable navigation views](RESUMABLE_VIEWS.md) for lifecycle and recovery details.
