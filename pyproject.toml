@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "firexcore-mailvault"
-version = "2.0.5"
+version = "2.0.6"
 description = "Provider-neutral, read-only, evidence-preserving email archival for analytics, eDiscovery, and procurement intelligence."
 readme = "README.md"
 requires-python = ">=3.12"
