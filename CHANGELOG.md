@@ -4,6 +4,34 @@ All notable changes to FireXCore MailVault are documented in this file.
 
 The project follows Semantic Versioning.
 
+## 2.0.6 - 2026-07-18
+
+### Added
+
+- Added resumable navigation-view builds with durable checkpoints and deterministic source fingerprints.
+- Added an exact progress bar with source rows, pointer writes, percentage and estimated time remaining.
+- Added `mailvault views --restart` for explicitly discarding an incomplete build.
+- Added a completed-view snapshot marker so unchanged archives return `UP TO DATE` without rewriting pointers.
+
+### Fixed
+
+- Bounded derived view path segments and pointer filenames with collision-resistant hashes for Windows portability.
+- Shortened atomic temporary filenames so destination names are not duplicated into temporary paths.
+- Built views in a staging tree and published them transactionally, preserving the previous completed views until the replacement is ready.
+- Corrected per-view pointer counters so `by-domain`, `by-thread`, `by-year`, `by-mailbox` and `by-label` totals are reported accurately.
+
+### Reliability
+
+- A safe interruption checkpoints only fully written source rows; rerunning the same command resumes from the last durable cursor.
+- A changed SQLite source snapshot invalidates an incomplete checkpoint and starts a clean replacement build automatically.
+- View builds share the archive process lock with sync so derived outputs cannot be published from a concurrently changing archive.
+
+### Documentation
+
+- Added a complete operator and engineering guide for Windows-safe, resumable view builds.
+- Added real runtime screenshots covering the release quality gate and live view progress.
+- Added exact interruption, resume, restart, publication, state-inspection, and troubleshooting procedures.
+
 ## 2.0.5 - 2026-07-14
 
 ### Fixed

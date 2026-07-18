@@ -51,7 +51,7 @@ Derived:
 - navigation views;
 - reports.
 
-Derived outputs can be removed and regenerated without contacting the mail server.
+Derived outputs can be removed and regenerated without contacting the mail server. Navigation views are generated from a fingerprinted SQLite read snapshot, checkpointed by a deterministic row cursor, and published from staging only after completion.
 
 ## Identity strategy
 

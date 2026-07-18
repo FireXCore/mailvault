@@ -132,9 +132,46 @@ mailvault sync     آرشیو کامل و قابل Resume پیام‌ها
 mailvault stats    نمایش آمار آرشیو
 mailvault verify   بررسی مجدد Hash فایل‌های EML و Blobها
 mailvault export   بازسازی JSONL و Procurement Manifest
-mailvault views    بازسازی Viewهای Domain، Sender، Thread، Year و Label
+mailvault views    ساخت Resumeپذیر Viewها با Progress دقیق، ETA و انتشار تراکنشی
 mailvault version  نمایش نسخه نصب‌شده
 ```
+
+## Viewهای حرفه‌ای در نسخه 2.0.6
+
+نسخه 2.0.6 سه ضعف عملیاتی لایه `views` را برطرف می‌کند:
+
+1. **مسیرهای امن برای Windows**: نام Label، Sender، Thread و Attachment دیگر نمی‌تواند مسیر نامحدود تولید کند. Segmentها محدود و همراه با Hash پایدار هستند و نام فایل موقت Atomic نیز کوتاه است.
+2. **Resume واقعی بعد از توقف**: پس از `Ctrl+C`، Cursor فقط تا آخرین Source Row کاملاً نوشته‌شده جلو می‌رود. اجرای مجدد همان دستور از Checkpoint معتبر ادامه می‌دهد.
+3. **Progress و ETA دقیق**: ابتدا تعداد دقیق Source Row و Pointer محاسبه می‌شود؛ سپس مرحله Planning، Building یا Resuming، درصد، تعداد Pointer و زمان تقریبی باقی‌مانده نمایش داده می‌شود.
+
+<p align="center">
+  <img src="assets/views-progress-terminal.png" alt="نمایش Progress و ETA ساخت Viewهای MailVault" width="100%">
+</p>
+
+ساخت یا ادامه Viewها:
+
+```powershell
+mailvault views `
+  --destination "E:\MailVault-E"
+```
+
+توقف با `Ctrl+C` امن است. برای ادامه همان فرمان را دوباره اجرا کن. فقط برای کنارگذاشتن عمدی Build نیمه‌کاره از این گزینه استفاده می‌شود:
+
+```powershell
+mailvault views `
+  --destination "E:\MailVault-E" `
+  --restart
+```
+
+وضعیت نهایی یکی از این موارد است:
+
+```text
+REBUILT
+RESUMED
+UP TO DATE
+```
+
+تا وقتی Snapshot جدید کامل نشده، View کامل قبلی جایگزین یا حذف نمی‌شود. راهنمای فنی کامل در [Resumable navigation views](RESUMABLE_VIEWS.md) قرار دارد.
 
 ## ارتباط با RMS و Procurement Intelligence
 
@@ -201,3 +238,4 @@ mailvault verify --destination E:\MailVault
 - [امنیت](SECURITY_MODEL.md)
 - [آمادگی Procurement](PROCUREMENT_READINESS.md)
 - [رفع خطا](TROUBLESHOOTING.md)
+- [ساخت Resumeپذیر Viewها](RESUMABLE_VIEWS.md)

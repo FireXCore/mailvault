@@ -12,6 +12,7 @@
 <p align="center">
   <a href="docs/README.fa.md">راهنمای فارسی</a> ·
   <a href="docs/GETTING_STARTED.md">Getting started</a> ·
+  <a href="docs/RESUMABLE_VIEWS.md">Resumable views</a> ·
   <a href="docs/ARCHITECTURE.md">Architecture</a> ·
   <a href="docs/PROCUREMENT_READINESS.md">Procurement readiness</a>
 </p>
@@ -215,10 +216,31 @@ See [Configuration](docs/CONFIGURATION.md).
 | `mailvault stats` | Display message, occurrence, MIME-part, blob, and storage counts. |
 | `mailvault verify` | Recalculate raw-message and blob hashes. |
 | `mailvault export` | Regenerate portable JSONL and procurement source manifests. |
-| `mailvault views` | Regenerate disposable navigation views by domain, sender, thread, mailbox, year, and label. |
+| `mailvault views` | Build resumable navigation views with exact progress, ETA, transactional publication, and automatic checkpoint recovery. |
 | `mailvault version` | Print the installed distribution version. |
 
 See [CLI reference](docs/CLI_REFERENCE.md).
+
+## Windows-safe, resumable navigation views
+
+MailVault 2.0.6 hardens the derived navigation-view pipeline for large archives:
+
+1. **Windows-safe paths** — untrusted labels, sender addresses, thread identifiers, and attachment filenames cannot create unbounded view paths. Directory segments and pointer filenames are bounded and receive deterministic SHA-256 suffixes when required.
+2. **Durable resume** — completed source rows are checkpointed into a staging build. After `Ctrl+C`, rerunning the same command resumes from the last durable cursor instead of deleting all completed work.
+3. **Exact progress and ETA** — the command plans the complete source snapshot, calculates exact source-row and pointer totals, and displays planning, building, resuming, publishing, percentage, and estimated time remaining.
+
+<p align="center">
+  <img src="docs/assets/views-resume-progress.png" alt="FireXCore MailVault resumable view build with exact progress and ETA" width="100%">
+</p>
+
+```powershell
+mailvault views `
+  --destination "E:\MailVault-E"
+```
+
+Use `--restart` only to intentionally discard an incomplete staging build. The previous completed `views/` tree remains available until its replacement is fully written and transactionally published.
+
+See [Resumable navigation views](docs/RESUMABLE_VIEWS.md) for the lifecycle, state files, path-safety model, recovery behavior, operational checks, and validation commands.
 
 ## Archive layout
 
@@ -302,7 +324,7 @@ Review [Security policy](SECURITY.md) and [Security model](docs/SECURITY_MODEL.m
 
 ## Reliability and operational limits
 
-MailVault uses metadata-first discovery, bounded fetch batches, randomized delays, rolling 24-hour bandwidth caps, checkpointed resume, and exponential retry. Provider limits still apply. A sync can be safely stopped and restarted with the same command and destination.
+MailVault uses metadata-first discovery, bounded fetch batches, randomized delays, rolling 24-hour bandwidth caps, checkpointed resume, and exponential retry. Provider limits still apply. Sync and navigation-view builds can be safely stopped and restarted with the same command and destination. View builds display exact source-row progress and ETA, write into a resumable staging tree, and publish only after the replacement snapshot is complete.
 
 Before transferring or importing an archive, run:
 
@@ -330,6 +352,7 @@ See [Contributing](CONTRIBUTING.md) and [Development](docs/DEVELOPMENT.md).
 - [Getting started](docs/GETTING_STARTED.md)
 - [Configuration](docs/CONFIGURATION.md)
 - [CLI reference](docs/CLI_REFERENCE.md)
+- [Resumable navigation views](docs/RESUMABLE_VIEWS.md)
 - [Provider support](docs/PROVIDERS.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Archive format](docs/ARCHIVE_FORMAT.md)
@@ -341,6 +364,7 @@ See [Contributing](CONTRIBUTING.md) and [Development](docs/DEVELOPMENT.md).
 - [Repository setup](docs/REPOSITORY_SETUP.md)
 - [Roadmap](docs/ROADMAP.md)
 - [References](docs/REFERENCES.md)
+- [Release notes: 2.0.6](docs/releases/v2.0.6.md)
 
 ## License
 

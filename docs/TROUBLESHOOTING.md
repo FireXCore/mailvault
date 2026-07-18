@@ -86,3 +86,51 @@ mailvault audit-labels `
 ```
 
 Do not finalize exports or backups until label coverage passes and `mailvault verify --sample 1` succeeds.
+
+
+## View build was interrupted
+
+Do not delete `state/views-rebuild-v1.json` or `state/views-rebuild-staging-v3/`. Run the same command again:
+
+```powershell
+mailvault views `
+  --destination "E:\MailVault-E"
+```
+
+A compatible build reports `Resuming views` and ends with `RESUMED`. Use `--restart` only to discard the incomplete staging build intentionally.
+
+## View build starts from zero instead of resuming
+
+MailVault rejects an incomplete checkpoint when one of these conditions is true:
+
+- the SQLite source changed after interruption;
+- the view layout version changed;
+- the source fingerprint, row total, or pointer total no longer matches;
+- the checkpoint or staging directory is missing;
+- `--restart` was supplied.
+
+This is a safety behavior. It prevents one published tree from combining two source snapshots.
+
+## View build appears slow during planning
+
+Planning scans the complete source once to calculate exact source rows, exact pointer writes, and the deterministic fingerprint. The progress description reports the number of rows scanned. Pointer writing begins after `View plan ready`.
+
+## Windows path failure while building views
+
+Upgrade to 2.0.6 or newer. Earlier exporters could embed long attachment-derived names in view paths and atomic temporary filenames.
+
+Version 2.0.6 bounds view segments and pointer filenames and uses a short `.mv-` temporary prefix. Do not solve this by moving canonical objects, shortening evidence filenames in SQLite, or disabling filesystem protections.
+
+## `mailvault views` reports `UP TO DATE`
+
+The completed marker and source fingerprint already match the current archive. No pointer files were rewritten and no action is required.
+
+## Completed view marker is missing
+
+A published view snapshot must contain:
+
+```text
+views/_mailvault_views.json
+```
+
+If the marker is missing, rerun `mailvault views`. The command recovers an interrupted publication when possible and otherwise builds a clean replacement snapshot.

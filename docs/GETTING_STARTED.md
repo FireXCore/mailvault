@@ -108,6 +108,24 @@ mailvault export --destination E:\MailVault
 mailvault views --destination E:\MailVault
 ```
 
+<p align="center">
+  <img src="assets/views-progress-terminal.png" alt="MailVault live view-build progress" width="100%">
+</p>
+
+`mailvault views` first plans an exact source snapshot and then displays determinate source-row progress, exact pointer writes, percentage, and ETA. After `Ctrl+C`, run the identical command to continue from the last durable source-row checkpoint.
+
+```powershell
+mailvault views --destination E:\MailVault
+```
+
+Use `--restart` only when you explicitly want to discard the incomplete staging build:
+
+```powershell
+mailvault views --destination E:\MailVault --restart
+```
+
+A successful result reports `REBUILT` or `RESUMED`. A second run against an unchanged archive reports `UP TO DATE` without rewriting pointers. See [Resumable navigation views](RESUMABLE_VIEWS.md).
+
 ## Recommended first-run sequence
 
 1. Run `doctor`.

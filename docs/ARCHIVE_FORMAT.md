@@ -9,10 +9,14 @@ MailVault/
 ├── metadata/messages/<archive-id>.json
 ├── database/mailvault.sqlite3
 ├── manifests/*.jsonl
-├── state/*
+├── state/
+│   ├── views-rebuild-v1.json
+│   ├── views-rebuild-staging-v3/
+│   └── views-previous/
 ├── reports/*
 ├── logs/*
-└── views/*
+└── views/
+    └── _mailvault_views.json
 ```
 
 ## Raw message objects
@@ -55,7 +59,11 @@ JSONL files provide streaming and portable integration surfaces. They are regene
 
 ## Navigation views
 
-Views contain pointer JSON, not duplicated attachment bytes. Their paths are sanitized for human navigation and are disposable.
+Views contain pointer JSON, not duplicated attachment bytes. Their path segments and pointer names are bounded and collision-resistant for cross-platform portability. Original filenames remain evidence fields inside pointer JSON rather than becoming unbounded storage names.
+
+Builds use a resumable staging tree, a durable source-row checkpoint, a deterministic source fingerprint, and a completed snapshot marker. The existing completed tree is replaced only after the new snapshot is fully written and ready for publication. An interrupted publication can restore the previous completed tree. Views remain disposable.
+
+See [Resumable navigation views](RESUMABLE_VIEWS.md).
 
 ## Portability
 
